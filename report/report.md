@@ -41,7 +41,27 @@ Dataene ble renset og transformert slik:
 
 ### 2.2 Utforskende analyse
 
-Som sagt ønsker vi å lade en modell som kan predikere om det skjerm samtidighet for AFIS-Fullmektig. 
+Som vi ser på figuren nedenfor har vi data fra 2018 til 2023 som viser en ganske stabilt antall med flyavganger/flylandinger for hele perioden. Likevel er det visse unntak blant annet juletider og koronaperioden mars-juni 2020.
+![Flight Counts](visualizations/3-flightCounts.png)
+
+
+Som en del av den utforskende analysen har vi sett på sammenhengen mellom planlagt samtidighet (target_sched) og faktisk samtidighet (target_actual). Figuren under viser resultatene både som antall tilfeller og som prosentandeler:
+
+![TargetVsActual](visualizations/1-TargetVsActual.png)
+![TargetVsActual%](visualizations/2-TargetVsActual%.png)
+
+Analysen viser at i 49 % av tilfellene der planlagte tider indikerer overlapp, oppstår det også faktisk samtidighet. Tilsvarende ser vi at i 30,3 % av tilfellene uten planlagt overlapp, skjer det heller ingen faktisk overlapp. Dette innebærer at i 79,3 % av tilfellene er planlagt tidsinformasjon alene tilstrekkelig for å predikere samtidighet korrekt.
+
+Det gjenstår imidlertid 20,7 % av tilfellene hvor planlagte tider ikke stemmer med faktisk utfall: enten var samtidighet planlagt uten å inntreffe, eller så oppstod samtidighet selv om det ikke var planlagt. Dette avviket er spesielt interessant, og videre analyse og modellering vil fokusere på å forstå hvilke faktorer som forklarer disse tilfellene.
+
+Vi ønsker å skje når i løpet av tidsintervaller på 1 time det vil skje en samtidighet. Grunnet at hver fly vil ha en kommunikasjonstid med AFIS-fullmektig på enten 23 eller 21 minutter vil det være naturlig å se på hvor mange fly vi har den gitte timen. 
+![FlightCountVsCollision%](flightCountVsCollision.png)
+
+Figuren prosentandelen for samtidighet for gitte antall fly per time. Som vi ser på figuren vil vi om vi har flere enn 4 fly på en time alltid ha samtidighet. Dette grunnet at det ikke er mulig at de ikke overlapper. Videre om vi har 3 fly vil vi i cirka 98% av tilfellene få en samtidighet, da flyene er nødt til å time tidsrommet veldig bra. Om vi har 2 fly vil vi ha samtidighet i cirka 78% av tilfellen mens vi vil ikke ha noen samtidighet dersom det bare er ett fly i det tidsrommet. Utifra dette ser vi at det er spesielt tidsrommene som har 2 fly på en time som vil være utfordrene å predikere.
+
+
+
+Vi ser her at i de aller fleste tilfeller er 
 Her kan du vise visualiseringer og nøkkelfunn, f.eks.:
 
 * Antall flyvninger per time og per flyplassgruppe.
