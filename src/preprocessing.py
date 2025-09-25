@@ -1,4 +1,6 @@
 import pandas as pd
+import holidays
+no_holidays = holidays.NO()
 
 # ---------------------------------------------------------------------
 # Load & basic cleaning
@@ -90,6 +92,7 @@ def make_hourly_targets(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     hourly_sched = hourly_sched.rename(columns={"target": "target_sched"})
 
     # Merge
+
     hourly = hourly_actual.merge(hourly_sched, on=["airport_group", "hour"], how="left")
     hourly["target_sched"] = hourly["target_sched"].fillna(0).astype(int)
 
@@ -116,6 +119,7 @@ def make_hourly_features(intervals_actual: pd.DataFrame) -> pd.DataFrame:
 
     # Time features
     feats["dow"]     = feats["hour"].dt.dayofweek
+    feats["holiday"] = feats["hour"].apply(lambda x: x.date() in no_holidays)
     feats["month"]   = feats["hour"].dt.month
     feats["hournum"] = feats["hour"].dt.hour
     feats["weekend"] = (feats["dow"] >= 5).astype(int)
@@ -131,6 +135,10 @@ def preprocess(path: str, cutoff="2024-01-01") -> tuple[pd.DataFrame, pd.DataFra
     df = load_flights(path)
     hourly, intervals_actual = make_hourly_targets(df)
     hourly_features = make_hourly_features(intervals_actual)
+
+    hourly["hour"] = pd.to_datetime(hourly["hour"])
+    hourly_features["hour"] = pd.to_datetime(hourly_features["hour"])
+
 
     dataset = hourly.merge(hourly_features, on=["airport_group", "hour"], how="left")
     dataset = dataset.sort_values("hour")
