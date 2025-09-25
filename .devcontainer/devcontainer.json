@@ -1,0 +1,28 @@
+{
+	"name": "Ubuntu",
+	"image": "mcr.microsoft.com/devcontainers/base:noble",
+	"features": {
+		"ghcr.io/devcontainers/features/anaconda:1": {},
+		"ghcr.io/devcontainers/features/python:1": {
+            "installTools": true,
+            "version": "latest"
+        }
+	},
+	"customizations": {
+        "vscode": {
+            "settings": {
+                /* Other */
+                "editor.tabSize": 4,
+                "editor.detectIndentation": false,
+                "editor.insertSpaces": true,
+                "files.insertFinalNewline": true,
+                "explorer.compactFolders": false,
+                "terminal.integrated.scrollback": 5000
+			},
+			"extensions": [
+				"ms-python.python",
+				"ms-toolsai.jupyter"
+			]
+		}
+	}		
+}
