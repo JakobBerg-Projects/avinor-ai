@@ -15,6 +15,16 @@ def load_flights(path: str) -> pd.DataFrame:
 
     return df
 
+# ---------------------------------------------------------------------
+#  Handle wrong times
+# ---------------------------------------------------------------------
+def handle_wrong_times(df: pd.DataFrame) -> pd.DataFrame:
+    """Handle cases where actual times are before scheduled times."""
+    df['duration'] = df['sta'] - df['std']
+    df = df[df['duration'] >= pd.Timedelta(0)].copy()
+    df = df[df['duration'] <= pd.Timedelta(hours=10)].copy()
+
+    return df
 
 # ---------------------------------------------------------------------
 # Interval construction
@@ -133,6 +143,7 @@ def make_hourly_features(intervals_actual: pd.DataFrame) -> pd.DataFrame:
 def preprocess(path: str, cutoff="2024-01-01") -> tuple[pd.DataFrame, pd.DataFrame]:
     """Full preprocessing pipeline: load, targets, features, merge, split."""
     df = load_flights(path)
+    df = handle_wrong_times(df)
     hourly, intervals_actual = make_hourly_targets(df)
     hourly_features = make_hourly_features(intervals_actual)
 
