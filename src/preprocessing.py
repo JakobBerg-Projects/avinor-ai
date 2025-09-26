@@ -75,6 +75,7 @@ def expand_to_hours(intervals: pd.DataFrame) -> pd.DataFrame:
             rows.append({**row, "hour": h})
     return pd.DataFrame(rows)
 
+
 # ---------------------------------------------------------------------
 # Overlap calculation
 # ---------------------------------------------------------------------

@@ -161,3 +161,5 @@ Vi ser flere muligheter for forbedring og utforskning:
 ## 7. Konklusjon
 
 Vi har etablert en komplett pipeline for å predikere samtidighet ved Avinors flyplassgrupper. Våre første resultater viser at Random Forest gir klart bedre prediksjoner enn baseline, og feature importance indikerer at både planlagte samtidigheter og flyintensitet er sentrale drivere.
+
+https://ourairports.com/data/
