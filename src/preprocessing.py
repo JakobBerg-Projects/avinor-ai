@@ -2,6 +2,7 @@ import pandas as pd
 import holidays
 no_holidays = holidays.NO()
 
+
 # ---------------------------------------------------------------------
 # Load & basic cleaning
 # ---------------------------------------------------------------------
@@ -34,18 +35,22 @@ def make_intervals(df: pd.DataFrame, actual: bool = True) -> pd.DataFrame:
         dep = df.dropna(subset=["atd"]).copy()
         dep["start"] = dep["atd"] - pd.to_timedelta(15, "m")
         dep["end"]   = dep["atd"] + pd.to_timedelta(8, "m")
+        dep["delay"] = (dep["atd"] - dep["std"]).dt.total_seconds() / 60
 
         arr = df.dropna(subset=["ata"]).copy()
         arr["start"] = arr["ata"] - pd.to_timedelta(16, "m")
         arr["end"]   = arr["ata"] + pd.to_timedelta(5, "m")
+        arr["delay"] = (arr["ata"] - arr["sta"]).dt.total_seconds() / 60
     else:
         dep = df.dropna(subset=["std"]).copy()
         dep["start"] = dep["std"] - pd.to_timedelta(15, "m")
         dep["end"]   = dep["std"] + pd.to_timedelta(8, "m")
+        dep["delay"] = 0 
 
         arr = df.dropna(subset=["sta"]).copy()
         arr["start"] = arr["sta"] - pd.to_timedelta(16, "m")
         arr["end"]   = arr["sta"] + pd.to_timedelta(5, "m")
+        dep["delay"] = 0 
 
     dep["airport_group"] = dep["dep_airport_group"]
     dep["type"] = "departure"
@@ -55,20 +60,30 @@ def make_intervals(df: pd.DataFrame, actual: bool = True) -> pd.DataFrame:
 
     intervals = pd.concat([dep, arr], ignore_index=True)
     intervals = intervals.dropna(subset=["airport_group"])
-    intervals["hour"] = intervals["start"].dt.floor("h")
+
 
     return intervals
 
+def expand_to_hours(intervals: pd.DataFrame) -> pd.DataFrame:
+    """Utvid hvert intervall til alle timene det overlapper."""
+    rows = []
+    for _, row in intervals.iterrows():
+        hour_start = row["start"].floor("h")
+        hour_end = row["end"].floor("h")
+        hours = pd.date_range(hour_start, hour_end, freq="h")
+        for h in hours:
+            rows.append({**row, "hour": h})
+    return pd.DataFrame(rows)
 
 # ---------------------------------------------------------------------
 # Overlap calculation
 # ---------------------------------------------------------------------
-def hourly_overlap(group: pd.DataFrame) -> pd.DataFrame:
-    """Check if overlaps occur within a given airport group + hour."""
+def hourly_overlap(df: pd.DataFrame) -> pd.DataFrame:
+    """Beregn om det finnes overlapp innenfor hver airport_group × time."""
     results = []
-    for hour, g in group.groupby("hour"):
+    for (airport, hour), group in df.groupby(["airport_group", "hour"]):
         events = []
-        for _, row in g.iterrows():
+        for _, row in group.iterrows():
             events.append((row["start"], +1))
             events.append((row["end"], -1))
         events.sort()
@@ -81,7 +96,7 @@ def hourly_overlap(group: pd.DataFrame) -> pd.DataFrame:
                 break
 
         results.append({
-            "airport_group": group["airport_group"].iloc[0],
+            "airport_group": airport,
             "hour": hour,
             "target": overlap
         })
@@ -92,12 +107,15 @@ def make_hourly_targets(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Compute hourly overlap targets (actual & scheduled)."""
     # Actual
     intervals_actual = make_intervals(df, actual=True)
-    hourly_actual = intervals_actual.groupby("airport_group", group_keys=False).apply(hourly_overlap)
+    intervals_actual_expanded = expand_to_hours(intervals_actual)
+    hourly_actual = intervals_actual_expanded.groupby("airport_group", group_keys=False).apply(hourly_overlap)
     hourly_actual = hourly_actual.rename(columns={"target": "target_actual"})
+    print("")
 
     # Scheduled
     intervals_sched = make_intervals(df, actual=False)
-    hourly_sched = intervals_sched.groupby("airport_group", group_keys=False).apply(hourly_overlap)
+    intervals_sched_expanded = expand_to_hours(intervals_sched)
+    hourly_sched = intervals_sched_expanded.groupby("airport_group", group_keys=False).apply(hourly_overlap)
     hourly_sched = hourly_sched.rename(columns={"target": "target_sched"})
 
     # Merge
@@ -105,7 +123,7 @@ def make_hourly_targets(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     hourly = hourly_actual.merge(hourly_sched, on=["airport_group", "hour"], how="left")
     hourly["target_sched"] = hourly["target_sched"].fillna(0).astype(int)
 
-    return hourly, intervals_actual
+    return hourly, intervals_actual_expanded
 
 
 # ---------------------------------------------------------------------
@@ -121,6 +139,8 @@ def make_hourly_features(intervals_actual: pd.DataFrame) -> pd.DataFrame:
         flights_cnt     = ("flight_id", "count"),
         avg_duration    = ("duration_min", "mean"),
         max_duration    = ("duration_min", "max"),
+        avg_delay       = ("delay", "mean"),   
+        max_delay       = ("delay", "max"), 
         passenger_share = ("service_type", lambda x: (x == "J").mean()),
         cargo_share     = ("service_type", lambda x: (x == "P").mean()),
         charter_share   = ("service_type", lambda x: (x == "C").mean())
@@ -132,6 +152,8 @@ def make_hourly_features(intervals_actual: pd.DataFrame) -> pd.DataFrame:
     feats["month"]   = feats["hour"].dt.month
     feats["hournum"] = feats["hour"].dt.hour
     feats["weekend"] = (feats["dow"] >= 5).astype(int)
+    
+    
 
     feats["date"] = feats["hour"].dt.normalize()
 
