@@ -1,6 +1,9 @@
 import pandas as pd
 import holidays
-no_holidays = holidays.NO()
+import requests
+import os
+
+from dotenv import load_dotenv
 
 
 # ---------------------------------------------------------------------
@@ -97,7 +100,9 @@ def hourly_overlap(df: pd.DataFrame) -> pd.DataFrame:
             results.append({ "airport_group": airport, "hour": hour, "target": overlap }) 
     return pd.DataFrame(results)
 
-
+# ---------------------------------------------------------------------
+#  Make hourly targets.
+# ---------------------------------------------------------------------
 def make_hourly_targets(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Compute hourly overlap targets (actual & scheduled)."""
     # Actual
@@ -172,6 +177,40 @@ def make_hourly_features(intervals_actual: pd.DataFrame) -> pd.DataFrame:
 
     return feats
 
+# ---------------------------------------------------------------------
+#  Make weather features
+# ---------------------------------------------------------------------
+def make_weather_features(df: pd.DataFrame) -> pd.DataFrame:    
+    weather = {}
+
+    for (i, row) in df.iterrows():
+        resp = None
+
+        if weather.get(row["hour"].date()) != None:
+            resp = weather.get(row["hour"].date())
+        else:
+            endpoint = 'https://frost.met.no/observations/v0.jsonld'
+            parameters = {
+                'sources': 'SN18700,SN90450',
+                'elements': 'mean(air_temperature P1D),sum(precipitation_amount P1D),mean(wind_speed P1D)',
+                'referencetime': f'{row["hour"].date()}',
+            }
+            r = requests.get(endpoint, parameters, auth=(os.getenv("FROST_ID"),''))
+            resp = r.json()
+
+        print(i)
+        print(resp)
+        df.loc[int(i), "weather"] = resp
+
+    #print(df.head())
+    
+    
+
+    # print(json)
+    
+
+    return df
+
 
 # ---------------------------------------------------------------------
 # Main preprocessing pipeline
@@ -180,18 +219,19 @@ def preprocess(path: str, cutoff="2024-01-01") -> tuple[pd.DataFrame, pd.DataFra
     """Full preprocessing pipeline: load, targets, features, merge, split."""
     df = load_flights(path)
     df = handle_wrong_times(df)
-    hourly, intervals_actual = make_hourly_targets(df)
-    hourly_features = make_hourly_features(intervals_actual)
+    hourly_df, flights_df = make_hourly_targets(df)
+    hourly_features_df = make_hourly_features(flights_df)
 
-    hourly["hour"] = pd.to_datetime(hourly["hour"])
-    hourly_features["hour"] = pd.to_datetime(hourly_features["hour"])
+    hourly_df["hour"] = pd.to_datetime(hourly_df["hour"])
+    hourly_features_df["hour"] = pd.to_datetime(hourly_features_df["hour"])
 
+    df = hourly_df.merge(hourly_features_df, on=["airport_group", "hour"], how="left")
+    df = df.sort_values("hour")
 
-    dataset = hourly.merge(hourly_features, on=["airport_group", "hour"], how="left")
-    dataset = dataset.sort_values("hour")
+    df = make_weather_features(df)
 
-    train = dataset[dataset["hour"] < cutoff]
-    validation  = dataset[dataset["hour"] >= cutoff]
+    train = df[df["hour"] < cutoff]
+    validation  = df[df["hour"] >= cutoff]
 
     return train, validation
 
@@ -200,8 +240,11 @@ def preprocess(path: str, cutoff="2024-01-01") -> tuple[pd.DataFrame, pd.DataFra
 # MAIN ENTRY POINT
 # ---------------------------------------------------------------------
 if __name__ == "__main__":
-    import os
-    print(os.getcwd())
+    # Setup
+    load_dotenv()
+
+    no_holidays = holidays.NO()
+    
     # Path to your raw data
     input_path = 'data/raw_data/historical_flights.csv'
 
