@@ -78,29 +78,25 @@ def expand_to_hours(intervals: pd.DataFrame) -> pd.DataFrame:
 # ---------------------------------------------------------------------
 # Overlap calculation
 # ---------------------------------------------------------------------
-def hourly_overlap(df: pd.DataFrame) -> pd.DataFrame:
-    """Beregn om det finnes overlapp innenfor hver airport_group × time."""
-    results = []
-    for (airport, hour), group in df.groupby(["airport_group", "hour"]):
-        events = []
-        for _, row in group.iterrows():
-            events.append((row["start"], +1))
-            events.append((row["end"], -1))
-        events.sort()
-
-        active, overlap = 0, 0
-        for _, change in events:
-            active += change
-            if active > 1:
-                overlap = 1
-                break
-
-        results.append({
-            "airport_group": airport,
-            "hour": hour,
-            "target": overlap
-        })
-    return pd.DataFrame(results)
+def hourly_overlap(group):
+    hour = group["hour"].iloc[0]
+    h_start, h_end = hour, hour + pd.Timedelta(hours=1)
+    events = []
+    for _, row in group.iterrows():
+        s = max(row["start"], h_start)
+        e = min(row["end"],   h_end)
+        if s < e:  # bare hvis det faktisk overlapper timen
+            events.append((s, +1))
+            events.append((e, -1))
+    events.sort()
+    active = 0
+    for _, d in events:
+        active += d
+        if active > 1:
+            return pd.DataFrame([{"airport_group": group["airport_group"].iloc[0],
+                                  "hour": hour, "target": 1}])
+    return pd.DataFrame([{"airport_group": group["airport_group"].iloc[0],
+                          "hour": hour, "target": 0}])
 
 
 def make_hourly_targets(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -154,6 +150,7 @@ def make_hourly_features(intervals_actual: pd.DataFrame) -> pd.DataFrame:
     feats["weekend"] = (feats["dow"] >= 5).astype(int)
     
     
+    feats = feats.sort_values(["airport_group", "hour"])
 
     feats["date"] = feats["hour"].dt.normalize()
 
@@ -161,6 +158,18 @@ def make_hourly_features(intervals_actual: pd.DataFrame) -> pd.DataFrame:
         ["airport_group", "date"]
     )["flights_cnt"].transform("sum")
 
+
+    feats["flights_cnt_prev"] = (
+        feats.groupby("airport_group")["flights_cnt"].shift(1)
+    )
+    feats["flights_cnt_next"] = (
+        feats.groupby("airport_group")["flights_cnt"].shift(-1)
+    )
+
+    # valgfritt håndtering av kanter:
+    feats[["flights_cnt_prev", "flights_cnt_next"]] = (
+        feats[["flights_cnt_prev", "flights_cnt_next"]].fillna(0).astype(int)
+    )
 
     return feats
 
