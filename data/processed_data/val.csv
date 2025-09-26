@@ -1,1 +1,1 @@
-airport_group,hour,target_actual,target_sched,flights_cnt,avg_duration,max_duration,avg_delay,max_delay,passenger_share,cargo_share,charter_share,dow,holiday,month,hournum,weekend,date,daily_flights_cnt,flights_cnt_prev,flights_cnt_next
+airport_group,hour,target_actual,target_sched,flights_cnt,avg_duration,max_duration,avg_delay,max_delay,passenger_share,cargo_share,charter_share,airline,dow,holiday,month,hournum,weekend,date,daily_flights_cnt,flights_cnt_prev,flights_cnt_next
