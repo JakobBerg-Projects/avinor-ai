@@ -12,7 +12,6 @@ def load_flights(path: str) -> pd.DataFrame:
 
     for col in ["std", "sta", "atd", "ata"]:
         df[col] = pd.to_datetime(df[col], errors="coerce")
-
     return df
 
 # ---------------------------------------------------------------------
@@ -133,6 +132,13 @@ def make_hourly_features(intervals_actual: pd.DataFrame) -> pd.DataFrame:
     feats["month"]   = feats["hour"].dt.month
     feats["hournum"] = feats["hour"].dt.hour
     feats["weekend"] = (feats["dow"] >= 5).astype(int)
+
+    feats["date"] = feats["hour"].dt.normalize()
+
+    feats["daily_flights_cnt"] = feats.groupby(
+        ["airport_group", "date"]
+    )["flights_cnt"].transform("sum")
+
 
     return feats
 
