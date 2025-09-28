@@ -80,16 +80,8 @@ Som histogrammet viser, har de fleste fly svært små forsinkelser. Likevel finn
 
 
 
-Vi ser her at i de aller fleste tilfeller er 
-Her kan du vise visualiseringer og nøkkelfunn, f.eks.:
+#### visualing av de forskjellige flyplassene
 
-* Antall flyvninger per time og per flyplassgruppe.
-
-* Forskjeller mellom planlagte og faktiske tider.
-
-* Hvor ofte samtidighet oppstår (fordeling av target).
-
-* Heatmaps eller tidsserier som viser variasjon over ukedager og timer.
 
 ### 2.3 Foreløpige observasjoner
 
