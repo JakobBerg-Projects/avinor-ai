@@ -32,8 +32,6 @@ Dataene ble renset og transformert slik:
 
 <small>
 
-* Fjernet kansellerte flyvninger - fordi disse ikke representerer faktiske operasjoner og derfor ikke kan bidra til å forklare samtidighetssituasjoner.
-
 * Konverterte tidsvariabler til datetime-format - for å kunne beregne intervaller, forsinkelser og aggregere flyvninger på time-/dagsnivå på en konsistent måte.
 
 * Fjernet urealistiske flytider (negative eller over 10 timer) - for å håndtere feilregistreringer eller datastøy som ellers ville kunne skape feil i beregningene av kommunikasjonsintervaller og mislede modellen.
@@ -41,8 +39,8 @@ Dataene ble renset og transformert slik:
 
 ### 2.2 Utforskende analyse
 
-Som vi ser på figuren nedenfor har vi data fra 2018 til 2023 som viser en ganske stabilt antall med flyavganger/flylandinger for hele perioden. Likevel er det visse unntak blant annet juletider og koronaperioden mars-juni 2020.
-![Flight Counts](visualizations/3-flightCounts.png)
+Vi ønsker å analysere når samtidighet oppstår i kommunikasjonen med AFIS-fullmektig per flyplass-gruppe. I motsetning til store flyplasser der det er flere AFIS-fullmektige, har mindre flyplasser en felles AFIS-fullmektig grunnet at det er betydeligere lavere flytrafikk. Kommunikasjon mellom fly og AFIS-fullmektig er 15 minutter før til 6 minutter etter for avgang og 15 minutter før til etter 8 minutter etter for landing. Vi ønsker å se når det er samtidighet i denne kommunikasjonen for følgende flyplasser og deres flyplass-gruppe.
+![AirPort Map](visualizations/airport-map.png)
 
 
 Som en del av den utforskende analysen har vi sett på sammenhengen mellom planlagt samtidighet (target_sched) og faktisk samtidighet (target_actual). Figuren under viser resultatene både som antall tilfeller og som prosentandeler:
@@ -54,10 +52,18 @@ Analysen viser at i 49 % av tilfellene der planlagte tider indikerer overlapp, o
 
 Det gjenstår imidlertid 20,7 % av tilfellene hvor planlagte tider ikke stemmer med faktisk utfall: enten var samtidighet planlagt uten å inntreffe, eller så oppstod samtidighet selv om det ikke var planlagt. Dette avviket er spesielt interessant, og videre analyse og modellering vil fokusere på å forstå hvilke faktorer som forklarer disse tilfellene.
 
-Vi ønsker å skje når i løpet av tidsintervaller på 1 time det vil skje en samtidighet. Grunnet at hver fly vil ha en kommunikasjonstid med AFIS-fullmektig på enten 23 eller 21 minutter vil det være naturlig å se på hvor mange fly vi har den gitte timen. 
-![FlightCountVsCollision%](flightCountVsCollision.png)
+Vi ønsker å skje når i løpet av tidsintervaller på 1 time det vil skje en samtidighet. Grunnet at hver fly vil ha en kommunikasjonstid med AFIS-fullmektig på enten 23 eller 21 minutter vil det være naturlig å se på hvor mange fly vi har den gitte timen, og hvordan det påvirker target og target scheduled.
+![FlightCountVsCollision%](visualizations/target-schedVsActual-flightcnt.png)
 
-Figuren prosentandelen for samtidighet for gitte antall fly per time. Som vi ser på figuren vil vi om vi har flere enn 4 fly på en time alltid ha samtidighet. Dette grunnet at det ikke er mulig at de ikke overlapper. Videre om vi har 3 fly vil vi i cirka 98% av tilfellene få en samtidighet, da flyene er nødt til å time tidsrommet veldig bra. Om vi har 2 fly vil vi ha samtidighet i cirka 78% av tilfellen mens vi vil ikke ha noen samtidighet dersom det bare er ett fly i det tidsrommet. Utifra dette ser vi at det er spesielt tidsrommene som har 2 fly på en time som vil være utfordrene å predikere.
+Figuren viser hvordan prediksjonene av samtidighet (target scheduled) samsvarer med de faktiske observasjonene (target actual) for ulike antall flyvninger per time.
+Vi ser at når antall fly per time øker, blir andelen korrekte prediksjoner svært høy. Allerede ved 4 fly eller mer per time er andelen korrekte tilfeller over 95 %, og fra 6 fly og oppover er den praktisk talt 100%.
+Ved lavere trafikk (1–3 fly per time) ser vi flere avvik:
+
+* Allerede ved 1 fly per time oppstår en betydelig andel falske negative. Dette kan skyldes at flyet ikke gikk i det planlagte timeintervallet, og dermed overlappet med et annet fly som var forventet i en annen time. 
+* Med 2 fly per time oppstår både falske positive og falske negative, noe som indikerer at modellen har utfordringer med å fange samtidighet korrekt i grensetilfellene.
+* Med 3 fly per time dominerer de falske negative, mens falske positive reduseres.
+Totalt sett viser figuren at prediksjonskvaliteten er svært god ved høy trafikk, mens de mest utfordrende situasjonene å predikere oppstår når vi har 2–3 fly på en time.
+* Ved høyere trafikk (4+ fly per time) øker treffsikkerheten raskt, og andelen korrekte prediksjoner er nær 100 %. Dette viser at prediksjonskvaliteten er svært god ved høy trafikk, mens de mest krevende situasjonene oppstår når vi har få fly per time.
 
 
 
