@@ -80,8 +80,17 @@ Som histogrammet viser, har de fleste fly svært små forsinkelser. Likevel finn
 
 
 
-#### visualing av de forskjellige flyplassene
+#### Daglige flyvninger mot target:
 
+![DagligeFlyvningerVsTarget%](visualizations/DailyFlightVSTarget.png)
+
+#### Visualing av de forskjellige flyplassene
+
+![FlyplassVsTarget%](visualizations/AirportGroupVSTarget.png)
+
+#### Visualing av de forskjellige flyselvkapene
+
+![FlyselvskapVsTarget%](visualizations/AirlineVSTarget.png)
 
 ### 2.3 Foreløpige observasjoner
 
