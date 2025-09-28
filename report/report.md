@@ -66,6 +66,16 @@ Ved lavere trafikk (1–3 fly per time) ser vi flere avvik:
 
 Totalt sett viser figuren at prediksjonskvaliteten er svært god ved høy trafikk, mens de mest utfordrende situasjonene å predikere oppstår når vi har 1–3 fly på en time.
 
+En sentral årsak til disse avvikene er forsinkelser. Dersom fly ikke går eller lander på det planlagte tidspunktet, kan kommunikasjonen overlappe selv om dette ikke var forventet i den opprinnelige planen. For å undersøke dette ser vi nærmere på hvordan forsinkelsene fordeler seg. Vi filtrerer bort ekstreme tilfeller, der noen få fly har forsinkelser på flere dager, og får dermed et mer representativt bilde av den typiske variasjonen.
+
+![FlightCountVsCollision%](visualizations/forsinkelse-histogram.png)
+
+Ettersom forsinkelsen har lange haler både for positiv og negativ forsinkelse vil en t-fordeling med parametere df=3.7 og mu=-1.98 og sigma=8.02 være et godt estimat på fordelingen forsinkelsen tas fra. Her ser vi at de aller fleste fly har nesten ingen forsinkelse. Likevel vil et skift fra dette midtpunktet gjøre at oppsatt tid ikke vil kunne alene beskrive om det vil forekomme samtidighet eller ikke.
+
+Som histogrammet viser, har de fleste fly svært små forsinkelser. Likevel finnes det både positive og negative forsinkelser med lange haler. Dette gjør at en t-fordeling med parametere df=3.7, μ = –1.98 og σ = 8.02 gir en god tilnærming til den observerte fordelingen. Selv små avvik fra planlagt tidspunkt kan føre til samtidighet, noe som betyr at oppsatt tid alene ikke er tilstrekkelig for å forutsi om overlapp vil oppstå.
+
+
+
 
 
 
