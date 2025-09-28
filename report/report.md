@@ -59,11 +59,14 @@ Figuren viser hvordan prediksjonene av samtidighet (target scheduled) samsvarer 
 Vi ser at når antall fly per time øker, blir andelen korrekte prediksjoner svært høy. Allerede ved 4 fly eller mer per time er andelen korrekte tilfeller over 95 %, og fra 6 fly og oppover er den praktisk talt 100%.
 Ved lavere trafikk (1–3 fly per time) ser vi flere avvik:
 
-* Allerede ved 1 fly per time oppstår en betydelig andel falske negative. Dette kan skyldes at flyet ikke gikk i det planlagte timeintervallet, og dermed overlappet med et annet fly som var forventet i en annen time. 
-* Med 2 fly per time oppstår både falske positive og falske negative, noe som indikerer at modellen har utfordringer med å fange samtidighet korrekt i grensetilfellene.
+* Allerede ved 1 fly per time ser vi en betydelig andel falske negative. Dette kan skyldes at flyet ikke faktisk gikk i sitt planlagte timeintervall, men i stedet overlappet med et annet fly som var forventet i en annen time. Det kan også være at et fly fra et annet timeintervall ble forsinket og dermed endte opp i samme tidsrom, slik at kommunikasjonen overlappet.
+* Med 2 fly per time oppstår både falske positive og falske negative, noe som indikerer at scheduled target har utfordringer med å fange samtidighet korrekt i grensetilfellene.
 * Med 3 fly per time dominerer de falske negative, mens falske positive reduseres.
-Totalt sett viser figuren at prediksjonskvaliteten er svært god ved høy trafikk, mens de mest utfordrende situasjonene å predikere oppstår når vi har 2–3 fly på en time.
 * Ved høyere trafikk (4+ fly per time) øker treffsikkerheten raskt, og andelen korrekte prediksjoner er nær 100 %. Dette viser at prediksjonskvaliteten er svært god ved høy trafikk, mens de mest krevende situasjonene oppstår når vi har få fly per time.
+
+Totalt sett viser figuren at prediksjonskvaliteten er svært god ved høy trafikk, mens de mest utfordrende situasjonene å predikere oppstår når vi har 1–3 fly på en time.
+
+
 
 
 
