@@ -52,7 +52,7 @@ Analysen viser at i 49 % av tilfellene der planlagte tider indikerer overlapp, o
 
 Det gjenstår imidlertid 20,7 % av tilfellene hvor planlagte tider ikke stemmer med faktisk utfall: enten var samtidighet planlagt uten å inntreffe, eller så oppstod samtidighet selv om det ikke var planlagt. Dette avviket er spesielt interessant, og videre analyse og modellering vil fokusere på å forstå hvilke faktorer som forklarer disse tilfellene.
 
-Vi ønsker å skje når i løpet av tidsintervaller på 1 time det vil skje en samtidighet. Grunnet at hver fly vil ha en kommunikasjonstid med AFIS-fullmektig på enten 23 eller 21 minutter vil det være naturlig å se på hvor mange fly vi har den gitte timen, og hvordan det påvirker target og target scheduled.
+Vi ønsker å se når i løpet av tidsintervaller på 1 time det vil skje en samtidighet. Grunnet at hver fly vil ha en kommunikasjonstid med AFIS-fullmektig på enten 23 eller 21 minutter vil det være naturlig å se på hvor mange fly vi har den gitte timen, og hvordan det påvirker target og target scheduled.
 ![FlightCountVsCollision%](visualizations/target-schedVsActual-flightcnt.png)
 
 Figuren viser hvordan prediksjonene av samtidighet (target scheduled) samsvarer med de faktiske observasjonene (target actual) for ulike antall flyvninger per time.
@@ -72,12 +72,8 @@ En sentral årsak til disse avvikene er forsinkelser. Dersom fly ikke går eller
 
 Ettersom forsinkelsen har lange haler både for positiv og negativ forsinkelse vil en t-fordeling med parametere df=3.7 og mu=-1.98 og sigma=8.02 være et godt estimat på fordelingen forsinkelsen tas fra. Her ser vi at de aller fleste fly har nesten ingen forsinkelse. Likevel vil et skift fra dette midtpunktet gjøre at oppsatt tid ikke vil kunne alene beskrive om det vil forekomme samtidighet eller ikke.
 
-Som histogrammet viser, har de fleste fly svært små forsinkelser. Likevel finnes det både positive og negative forsinkelser med lange haler. Dette gjør at en t-fordeling med parametere df=3.7, μ = –1.98 og σ = 8.02 gir en god tilnærming til den observerte fordelingen. Selv små avvik fra planlagt tidspunkt kan føre til samtidighet, noe som betyr at oppsatt tid alene ikke er tilstrekkelig for å forutsi om overlapp vil oppstå.
-
-
-
-
-
+![samtidighetMåneder](visualizations/4-samtidighet-måneder.png)
+Figuren viser andelen samtidighet per måned gjennom året. Vi ser en markant sesongvariasjon: andelen samtidighet er lavest i april–mai (ca. 30 %), men øker jevnt utover sommeren og når en topp på rundt 36 % i september–oktober. Deretter faller andelen igjen mot desember. Dette indikerer at høsten har en klart høyere andel samtidige flybevegelser, noe som kan skyldes både økt trafikkvolum og mer komplekse avvik i denne perioden.
 
 
 #### Daglige flyvninger mot target:
@@ -111,34 +107,72 @@ Ved overlapp i disse intervallene oppstår samtidighet. Dette ble aggregert per 
 * target_sched (basert på planlagte tider).
 
 ### 3.3 Feature engineering
-Følgende features ble laget:
+For å gjøre datasettet egnet til prediksjon ble det gjennomført en rekke trinn med feature engineering, basert på både de rå flydataene og eksterne kilder:
 
-* Operasjonelle: antall flyvninger per time (flights_cnt), gj.snitt og maks flytid, andel passasjer-, cargo- og charterfly.
-* Tid: ukedag, måned, time på dagen, helg-indikator.
-* Planlagt samtidighet: target_sched.
+Operasjonelle features
+* flights_cnt: Antall flyvninger per time er direkte knyttet til sannsynligheten for overlapp. Jo flere fly som skal håndteres innenfor samme time, desto større sjanse for at kommunikasjonsintervallene overlapper.Analysen viste at samtidighet nesten alltid oppstår når antallet er høyt (≥4), mens det er mer usikkert ved 1–3 fly per time. Dette underbygger hvorfor flights_cnt ble valgt som en sentral feature.
+* flight_cnt_prev, flights_cnt_next: Tar hensyn til forsinkelser. Et fly som egentlig var planlagt i timen før kan bli forsinket og dermed overlappe med inneværende time, mens et fly fra neste time kan ankomme tidligere enn planlagt og dermed påvirke den samme perioden. Disse lag-variablene fanger opp slike forskyvninger. Som vist i tidligere visualiseringer ligger de fleste avvik i oppsatt tid innenfor intervallet [-30, 30] minutter, noe som gjør det naturlig å inkludere fly fra både forrige og neste time.
+* daily_flights_cnt: Summerer trafikkmengden for hele dagen. Høy daglig trafikk kan øke belastningen og risikoen for forsinkelser, noe som igjen påvirker samtidighet.
+* avg_duration og max_duration: Gjennomsnittlig og maksimal planlagt flytid, beregnet fra sta – std.
+* passenger_share, cargo_share, charter_share: Andel av flyvningene i timen som er passasjer-, frakt- eller charterfly.
+* airline: dominerende flyselskap i timen (modus).
+
+Tidsfeatures
+* dow: ukedag (0-6). Trafikkmengden varierer systematisk gjennom uken.
+* month: Måned. Brukt for å fange opp sesongvariasjoner.
+* hournum: Time på døgnet. Trafikk varierer over døgnet, noe som påvirker samtidighet.
+* weekend: Om timen faller på helg.
+* holiday: Om dagen er en offentlig helligdag i Norge.
+
+Targets
+* target_actual: faktisk samtidighet (overlapp i avganger og ankomster, beregnet fra faktiske tider atd/ata).
+* target_sched: planlagt samtidighet (beregnet fra planlagte tider std/sta), som i analysen viste seg å stemme i ca. 80 % av tilfellene.
+
+Andre kilder
+* Flyplassgrupper ble koblet på geografiske koordinater (airportgroups.csv og airports.csv).
+* Klimadata (temperatur, nedbør, vind) ble koblet inn via Frost API, basert på nærmeste værstasjon til hver flyplassgruppe.
+
+Kort sagt: Vi startet med rå flydata, renset bort ugyldige eller ekstreme registreringer, og konstruerte et fullstendig timegrid per flyplassgruppe. Deretter ble intervaller for avgang/ankomst utvidet til timeaggregater, og både tidsbaserte og operasjonelle features ble lagt på. Til slutt ble eksterne variabler som helligdager og vær inkludert for å fange opp sesong- og miljøeffekter.
 
 ### 3.4 Baseline modeller
 Vi etablerte to enkle baselines:
 
-1. Bruke target_sched direkte som prediksjon → ga AUC og log loss som referanse.
+1. Bruke target_sched direkte som prediksjon → ga AUC og log loss som referanse. 
+    
 2. Majoritetsklassifikator (andel samtidighet i trening) → ga et alternativt sammenligningspunkt.
+    
 
 ### 3.5 Modellvalg
 
-Vi valgte en Random Forest Classifier med følgende parametere:
+Vi testet to klassifikasjonsmodeller: Random Forest Classifier og XGBoost Classifier. Begge modellene ble implementert i en scikit-learn Pipeline, hvor preprocessing bestod av OneHotEncoder for kategoriske variabler og passthrough for numeriske variabler.
 
-* n_estimators = 200
-* max_depth = 20
-* random_state = 42
+For hyperparameter-tuning benyttet vi en totrinns tilnærming:
+* RandomizedSearchCV ble brukt til å gjøre et bredt søk over mulige hyperparametere.
+* For Random Forest ble det deretter brukt HalvingGridSearchCV for å snevre inn søket og finjustere hyperparametrene lokalt. For XGBoost valgte vi å beholde resultatene fra RandomizedSearchCV, ettersom denne modellen var rask å trene og det brede søket allerede ga tilfredsstillende resultater.
+De beste modellene fra hver metode ble deretter evaluert på valideringsdatasettet. Resultatene for de to modellene er vist under:
 
-Denne ble pakket i en scikit-learn Pipeline med preprocessing (OneHotEncoder for kategoriske features, passthrough for numeriske).
+RandomForestClassification
+* Accuracy:
+* AUC: 
+* Log-loss: 
+
+XGBoostClassification
+* Accuracy:
+* AUC: 
+* Log-Loss
+
+Dermed har vi valgt XGBoostClassification som endelig modell, og evaluerer denne på test-dataen.
 
 ## 4. Resultater
 ### 4.1 Baseline
 
 Baseline med target_sched: moderat AUC, men høy log loss (overkonfidens).
+* AUC: 0.856 
+* Log-loss: 0.852
 
 Majoritetsmodell: lav prediksjonsevne, men jevn log loss.
+* AUC: 0.5
+* Log-loss: 0.627
 
 ### 4.2 Random Forest
 
