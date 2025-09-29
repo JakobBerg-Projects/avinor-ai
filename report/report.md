@@ -215,11 +215,11 @@ Totalt sett viser feature importance-analysen at samtidighet først og fremst dr
 
 Løsningen er bygget som et modulært Python-system:
 
-* preprocess.py: full pipeline for lasting, rensing og feature engineering.
+* preprocess.ipynb: full pipeline for lasting, rensing og feature engineering.
 
-* modellering.py: trenings- og evalueringslogikk.
+* model.ipynb: trenings- og evalueringslogikk.
 
-* innlevering.py (planlagt): genererer prediksjoner i konkurransens csv-format.
+* app.py: visualiserer resultatet av oktober 2025
 
 Dette muliggjør enkel reproduserbarhet og videreutvikling.
 
