@@ -13,7 +13,7 @@ For en fullstendig beskrivelse av metode, analyser og resultater:
 avinor-ai/
 │
 ├── data/
-│   ├── raw_data/              # Originale data fra Avinor (+ airports.csv fra https://ourairports.com/data/)
+│   ├── raw_data/              # Originale data fra Avinor (+ airports.csv fra)
 │   ├── processed_data/        # Ferdig bearbeidede data (train/val/test/predict_oct2025)
 │   ├── prediction_data/       # Modellens prediksjoner
 │   └── konkurranse_info/      # Informasjon om konkurransen
@@ -36,6 +36,7 @@ avinor-ai/
 ├── requirements.txt           # Avhengigheter
 └── README.md                  # Denne filen
 
+https://ourairports.com/data/
 
 ```mermaid
 flowchart TD
