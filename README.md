@@ -9,7 +9,7 @@ For en fullstendig beskrivelse av metode, analyser og resultater:
 [Se rapporten her](report/report.pdf)
 
 ## 📂 Prosjektstruktur
-    ```bash
+    ```
     avinor-ai/
     │
     ├── data/
@@ -35,7 +35,7 @@ For en fullstendig beskrivelse av metode, analyser og resultater:
     │
     ├── requirements.txt           # Avhengigheter
     └── README.md                  # Denne filen
-    ´´´
+    ```
 
 
 ```mermaid
