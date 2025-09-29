@@ -15,22 +15,22 @@ avinor-ai/
 ├── data/
 │ ├── raw_data/ # Originale data fra Avinor. I tillegg hentet vi airports.csv (blant annet for å få posisjonen på flyplassene) fra https://ourairports.com/data/
 │ ├── processed_data/ # Ferdig bearbeidede data (train/val/test/predict_oct2025)
-| |–– prediction_data/ # Modellens prediksjoner
+│ ├–– prediction_data/ # Modellens prediksjoner
 │ └── konkurranse_info/ # Informasjon om konkurransen
 │
 ├── notebooksExpiremental/ # Utforskning, ikke del av endelig løsning
 │ ├── 02-eda-jakob.ipynb # Ekspirementell utforskning
-| |–– 02.eda-tobias-ipynb # Ekspirementell utforskning
+| ├–– 02.eda-tobias-ipynb # Ekspirementell utforskning
 │ └── 03-visualizations.ipynb # Endelige visualiseringer 
 │
 ├── report/
-| |–– visualizations/ # Visualiseringer brukt i rapporten i png format
+│ |–– visualizations/ # Visualiseringer brukt i rapporten i png format
 │ ├── report.md # Rapport i markdown
 │ └── report.pdf # Ferdig rapport i PDF
 │
 ├── src/
-│ ├── preprocessing.ipynb # Dataprosessering
-| |–– model.ipynb # Modellering
+│ ├──preprocessing.ipynb # Dataprosessering
+│ ├–– model.ipynb # Modellering
 │ └── app.py # Streamlit-app for interaktiv visualisering
 │
 ├── requirements.txt # Avhengigheter
@@ -45,6 +45,7 @@ flowchart TD
     D --> F[Prediksjonsfiler (CSV)]
     F --> G[Streamlit-app (app.py)]
     G --> H[Interaktiv visualisering av samtidighet]
+```
 
 ## ⚙️ Installasjon
 
@@ -52,15 +53,18 @@ flowchart TD
    ```bash
    git clone <repo-url>
    cd avinor-ai
+   ```
 
 2. Opprett og aktiver miljø:
     ```bash
     conda create -n avinor-ml python=3.13
     conda activate avinor-ml
+    ```
 
 3. Installer avhengigheter:
     ```bash
     pip install -r requirements.txt
+    ```
 
 ## Bruk
 1. Preprocessing og modelltrening
@@ -70,6 +74,7 @@ flowchart TD
 2. Valgfritt: Kjør Streamlit-app
     ```bash
     streamlit run src/app.py
+    ```
 
 ## Metode
 - **Features:** antall fly per time, planlagt samtidighet, forsinkelsesvariabler, tid/dato, flytypefordeling  
