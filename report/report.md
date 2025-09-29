@@ -145,11 +145,9 @@ Vi etablerte to enkle baselines:
 ### 3.5 Modellvalg
 
 Vi testet to klassifikasjonsmodeller: Random Forest Classifier og XGBoost Classifier. Begge modellene ble implementert i en scikit-learn Pipeline, hvor preprocessing bestod av OneHotEncoder for kategoriske variabler og passthrough for numeriske variabler.
+For hyperparameter-tuning benyttet vi RandomizedSearchCV for å gjøre et bredt søk over mulige hyperparametere. Vi testet også HalvingGridSearchCV for mer finjustert tuning, men dette ga liten til ingen forbedring i modellresultatene og ble derfor droppet.
+De beste modellene fra RandomizedSearchCV ble deretter evaluert på valideringsdatasettet. Resultatene for de to modellene er vist under:
 
-For hyperparameter-tuning benyttet vi en totrinns tilnærming:
-* RandomizedSearchCV ble brukt til å gjøre et bredt søk over mulige hyperparametere.
-* For Random Forest ble det deretter brukt HalvingGridSearchCV for å snevre inn søket og finjustere hyperparametrene lokalt. For XGBoost valgte vi å beholde resultatene fra RandomizedSearchCV, ettersom denne modellen var rask å trene og det brede søket allerede ga tilfredsstillende resultater.
-De beste modellene fra hver metode ble deretter evaluert på valideringsdatasettet. Resultatene for de to modellene er vist under:
 
 RandomForestClassification
 * Accuracy:
@@ -178,19 +176,40 @@ Majoritetsmodell: lav prediksjonsevne, men jevn log loss.
 
 Accuracy: (resultat)
 
+![featureimportance](visualizations/cm.png)
+
+Figuren over viser confusion matrix for Random Forest-modellen på testsettet, uttrykt i prosent. Vi ser at modellen predikerer korrekt i 90,9 % av tilfellene (63,9 % + 27,0 %), mens feilprediksjoner utgjør henholdsvis 5,7 % falske positive og 3,4 % falske negative. Dette innebærer at modellen i stor grad klarer å identifisere samtidighet når den faktisk forekommer, samtidig som den i liten grad overpredikerer tilfeller der det ikke er samtidighet.
+Sammenligner vi dette med baseline-figuren (Scheduled vs Actual), ser vi en klar forbedring. Baseline basert på planlagte tider treffer riktig i 79,3 % av tilfellene (49,0 % + 30,3 %), men har en høyere andel feilprediksjoner (20,7 % totalt). Random Forest-modellen reduserer altså feilraten betydelig ved å fange opp avvik som skyldes forsinkelser og andre operasjonelle forhold som ikke reflekteres i planlagte tider.
+Dette viser at modellen tilfører klar merverdi utover baseline, særlig ved å redusere antallet falske negative – altså tilfeller hvor planlagte tider indikerer ingen samtidighet, men hvor det i realiteten oppstår overlapp.
+
 AUC: (resultat)
+
+![featureimportance](visualizations/cm.png)
+
+Figuren viser ROC-kurven (Receiver Operating Characteristic) for Random Forest-modellen på testsettet. Kurven illustrerer forholdet mellom True Positive Rate (sensitivitet) og False Positive Rate (1–spesifisitet) for ulike terskelverdier.
+AUC (Area Under the Curve) er beregnet til 0,964, noe som indikerer svært høy diskrimineringsevne. Det betyr at modellen i 96,4 % av tilfellene vil rangere et tilfeldig valgt positivt tilfelle høyere enn et negativt tilfelle.
+Den tydelige buen langt over diagonal-linjen (tilfeldig gjetning) viser at modellen er betydelig bedre enn en naiv klassifikator, og at den har god balanse mellom å oppdage samtidighet (høy sensitivitet) og å unngå falske alarmer (lav falsk positiv rate).
 
 Log Loss: (resultat)
 
 ### 4.3 Feature importance
 
 De viktigste feature-gruppene i modellen var:
+* Antall flyvninger per time (flights_cnt) – den klart mest informative variabelen. Sannsynligheten for samtidighet øker kraftig når antall flyvninger per time passerer et visst nivå, slik vi også så i den utforskende analysen. Mange fly på kort tid gir større sjanse for overlapp i kommunikasjonsintervallene.
 
-* Planlagt samtidighet (target_sched)
-* Antall flyvninger per time (flights_cnt)
-* Tid på døgnet (hournum)
-* Flytype-fordeling (passasjer vs. cargo)
-* Ukedag/helg
+* Planlagt samtidighet (target_sched) – gir et sterkt signal fordi den baserer seg på de planlagte tidspunktene for avganger og ankomster. Selv om den ikke fanger opp alle forsinkelser, stemmer planlagt samtidighet med faktisk utfall i rundt 80 % av tilfellene og er dermed en god prediktor.
+
+* Andel passasjerfly (passenger_share) – reflekterer at ulike flytyper kan ha ulik regularitet og påvirkning på samtidighet. Rutefly (passasjerfly) opererer gjerne etter faste tidspunkter og er mer utsatt for koordinerte topper i trafikken, noe som kan forklare hvorfor andelen passasjerfly har høy betydning.
+
+* Maksimal og gjennomsnittlig flytid (max_duration, avg_duration) – lengre flytider kan være knyttet til større ruter og mer trafikkerte avganger/ankomster, som igjen øker sjansen for overlapp i AFIS-kommunikasjonen. De gir også et indirekte signal om hvilken type trafikk som dominerer i et gitt tidsrom.
+
+* Lag-variabler for nabotimer (flights_cnt_prev, flights_cnt_next) – bidrar med informasjon om forskyvninger i trafikken. Dersom et fly blir forsinket fra forrige time eller ankommer tidligere enn planlagt fra neste time, kan det skape samtidighet i nåværende time.
+
+* Tidsvariabler (hournum, month, dow) – hjelper modellen å fange opp mønstre som varierer over døgnet, uken og året. Selv om disse variablene er mindre viktige enn de operasjonelle, bidrar de til å fange sesongvariasjoner og systematiske trafikkmønstre.
+
+Totalt sett viser feature importance-analysen at samtidighet først og fremst drives av trafikkmengde og planlagte tidspunkter, men at trafikktyper, varighet og forskyvninger i tid også gir viktige bidrag.
+
+![featureimportance](visualizations/feature_importance.png)
 
 ## 5. Systemstruktur og arkitektur
 
@@ -206,11 +225,11 @@ Dette muliggjør enkel reproduserbarhet og videreutvikling.
 
 ## 6. Videre arbeid
 
-Vi ser flere muligheter for forbedring og utforskning:
+Vi har allerede inkludert eksterne kilder som værdata, helligdager og sesonginformasjon, men ser flere muligheter for videre forbedring:
 
-* Eksterne datakilder: integrere værdata, helligdager og sesonginformasjon.
-* Hyperparameter-tuning: optimalisere max_depth, learning rate, og antall estimators.
-* Feature-utvidelser: kjedeeffekter (forsinkelser som forplanter seg til neste flyvning).
+* Mer detaljerte værdata: Vi har benyttet standard klimadata (temperatur, nedbør, vind), men det kunne vært nyttig å hente mer flytekniske værvariabler dersom dette var lettere tilgjengelig, for eksempel siktforhold, skydekke, turbulensvarsler eller vindretning på rullebane. Slike forhold kan ha direkte innvirkning på forsinkelser og samtidighet.
+* Forbedret hyperparameter-tuning: Vi har gjennomført både RandomizedSearchCV og HalvingGridSearchCV, men kunne utvidet med mer avanserte søkestrategier (f.eks. Bayesian Optimization) for ytterligere å optimalisere modellene.
+* Feature-utvidelser: Utforske hvordan forsinkelser forplanter seg i kjeder (cascade-effekter), der en forsinkelse på ett fly kan påvirke neste rotasjon eller andre fly i samme flyplassgruppe
 
 ## 7. Konklusjon
 
