@@ -31,5 +31,7 @@ with col2:
     fig = px.bar(df_filtered, x="airport_group", y="pred",
                  title=f"Predikert samtidighet {selected_time}",
                  labels={"pred": "Predikert sannsynlighet", "airport_group": "Flyplassgruppe"},
-                 range_y=[0,1])
+                 range_y=[0,1],
+                 category_orders={"airport_group": ["A","B","C","D","E","F","G"]})
+    
     st.plotly_chart(fig, use_container_width=True)
