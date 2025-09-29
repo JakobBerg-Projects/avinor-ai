@@ -11,40 +11,40 @@ For en fullstendig beskrivelse av metode, analyser og resultater:
 ## 📂 Prosjektstruktur
 
 avinor-ai/
-│
-├── data/
-│ ├── raw_data/ # Originale data fra Avinor. I tillegg hentet vi airports.csv (blant annet for å få posisjonen på flyplassene) fra https://ourairports.com/data/
-│ ├── processed_data/ # Ferdig bearbeidede data (train/val/test/predict_oct2025)
-│ ├–– prediction_data/ # Modellens prediksjoner
-│ └── konkurranse_info/ # Informasjon om konkurransen
-│
-├── notebooksExpiremental/ # Utforskning, ikke del av endelig løsning
-│ ├── 02-eda-jakob.ipynb # Ekspirementell utforskning
-| ├–– 02.eda-tobias-ipynb # Ekspirementell utforskning
-│ └── 03-visualizations.ipynb # Endelige visualiseringer 
-│
-├── report/
-│ |–– visualizations/ # Visualiseringer brukt i rapporten i png format
-│ ├── report.md # Rapport i markdown
-│ └── report.pdf # Ferdig rapport i PDF
-│
-├── src/
-│ ├──preprocessing.ipynb # Dataprosessering
-│ ├–– model.ipynb # Modellering
-│ └── app.py # Streamlit-app for interaktiv visualisering
-│
-├── requirements.txt # Avhengigheter
-└── README.md # Denne filen
+|
+|-- data/
+|   |-- raw_data/              # Originale data fra Avinor (+ airports.csv fra https://ourairports.com/data/)
+|   |-- processed_data/        # Ferdig bearbeidede data (train/val/test/predict_oct2025)
+|   |-- prediction_data/       # Modellens prediksjoner
+|   \-- konkurranse_info/      # Informasjon om konkurransen
+|
+|-- notebooksExperimental/     # Utforskning, ikke del av endelig løsning
+|   |-- 02-eda-jakob.ipynb     # Eksperimentell utforskning
+|   |-- 02-eda-tobias.ipynb    # Eksperimentell utforskning
+|   \-- 03-visualizations.ipynb# Endelige visualiseringer
+|
+|-- report/
+|   |-- visualizations/        # Visualiseringer brukt i rapporten (png)
+|   |-- report.md              # Rapport i markdown
+|   \-- report.pdf             # Ferdig rapport i PDF
+|
+|-- src/
+|   |-- preprocessing.ipynb    # Dataprosessering
+|   |-- model.ipynb            # Modellering
+|   \-- app.py                 # Streamlit-app for interaktiv visualisering
+|
+|-- requirements.txt           # Avhengigheter
+\-- README.md                  # Denne filen
 
 ```mermaid
 flowchart TD
-    A[Rådata (historical_flights.csv)] -->|Rensing| B[preprocessing.py]
+    A[Raw data (historical_flights.csv)] -->|Cleaning| B[preprocessing.py]
     B --> C[Feature engineering]
-    C --> D[Modelltrening (Random Forest, XGBoost)]
-    D --> E[Evalueringsmetrikker: AUC, Log Loss]
-    D --> F[Prediksjonsfiler (CSV)]
-    F --> G[Streamlit-app (app.py)]
-    G --> H[Interaktiv visualisering av samtidighet]
+    C --> D[Model training (Random Forest, XGBoost)]
+    D --> E[Evaluation metrics: AUC, Log Loss]
+    D --> F[Prediction files (CSV)]
+    F --> G[Streamlit app (app.py)]
+    G --> H[Interactive visualization of concurrency]
 ```
 
 ## ⚙️ Installasjon
