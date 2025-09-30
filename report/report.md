@@ -39,6 +39,11 @@ Dataene ble renset og transformert slik:
 * Fjernet urealistiske flytider (negative eller over 10 timer) - for å håndtere feilregistreringer eller datastøy som ellers ville kunne skape feil i beregningene av kommunikasjonsintervaller og mislede modellen.
 </small>
 
+I tillegg ble dataen delt opp i følgende perioder:
+* Train (01.01.2018-31.12.2024)
+* Validation (01.01.2025-31.03.2025)
+* Test (01.04.2025-31.07.2025)
+
 ### 2.2 Utforskende analyse
 
 Vi ønsker å analysere når samtidighet oppstår i kommunikasjonen med AFIS-fullmektig per flyplass-gruppe. I motsetning til store flyplasser der det er flere AFIS-fullmektige, har mindre flyplasser en felles AFIS-fullmektig grunnet at det er betydeligere lavere flytrafikk. Kommunikasjon mellom fly og AFIS-fullmektig er 15 minutter før til 6 minutter etter for avgang og 15 minutter før til etter 8 minutter etter for landing. Vi ønsker å se når det er samtidighet i denne kommunikasjonen for følgende flyplasser og deres flyplass-gruppe.
