@@ -18,6 +18,7 @@ Vi valgte en maskinlæringstilnærming fordi samtidighet påvirkes av flere fakt
 * Evaluering: ROC AUC og Log Loss ble brukt som primære metrikker.
  Beste modell ble XGBoost, som ble valgt for endelig innsending.
 
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 ## b. Systemstruktur og arkitektur
 ### 📂 Prosjektstruktur
 Løsningen består av flere steg: datarensing, feature engineering, modelltrening og visualisering via Streamlit.
@@ -49,7 +50,7 @@ Løsningen består av flere steg: datarensing, feature engineering, modelltrenin
     ├── requirements.txt           # Avhengigheter
     └── README.md                  # Denne filen
     ```
-
+<br><br><br><br><br><br><br><br><br><br><br><br>
 ### 🗂️ Arkitekturdiagram
 
 ```mermaid
@@ -62,7 +63,7 @@ flowchart TD
     F --> G[Streamlit app - app.py]
     G --> H[Interactive visualization of concurrency]
 ```
-
+<br><br><br><br>
 ## c. Modeller og algoritmer
 * Random Forest Classifier
     * Parametere: n_estimators, max_depth, min_samples_split, min_samples_leaf.
@@ -104,6 +105,7 @@ Deretter, lager man en `.env` fil i hovedmappen med følgende innhold:
 FROST_ID=<client ID>
 FROST_SECRET=<...>
 ```
+<br>
 
 ### Bruk
 1. Preprocessing og modelltrening
@@ -124,19 +126,20 @@ FROST_SECRET=<...>
     ```
 
 ## e. Innovasjon og kreativitet
-### Oppsummering av modellens egenskaper og styrker
+#### Oppsummering av modellens egenskaper og styrker
 * Høy treffsikkerhet: XGBoost-modellen fanger opp komplekse mønstre i dataene og gir best ytelse av de testede modellene, med høy ROC AUC og lav Log Loss.
 * Robusthet: Modellen er trent på en rik feature-sett som inkluderer trafikkmønstre, forsinkelser, værdata og kalenderinformasjon (helg/helligdag). Dette gjør den godt egnet til å generalisere på tvers av ulike flyplasser og tidspunkter.
 * Kalibrerte sannsynligheter: Log Loss-optimalisering sikrer at modellens sannsynlighetsestimat kan brukes direkte i beslutningsstøtte, ikke bare som klassifikasjoner.
 * Forklarbarhet: Feature importance fra XGBoost og Random Forest gir innsikt i hvilke faktorer som påvirker samtidighet mest – for eksempel antall flyvninger, tid på døgnet og forsinkelser.
-### Kreativ bruk av kunstig intelligens og data
+#### Kreativ bruk av kunstig intelligens og data
 * Ekstern datakilde: Vi har integrert værdata fra Meteorologisk institutt (Frost API), noe som gir et ekstra dimensjonalt lag av informasjon utover Avinors egne data. Værforhold kan påvirke trafikkavvikling og samtidighet, og denne integrasjonen gir Avinor et rikere beslutningsgrunnlag.
-#### Kreativ feature engineering:
+##### Kreativ feature engineering:
 * Variabler som flights_cnt_prev og flights_cnt_next gir et bilde av kapasitetsdynamikken rundt en gitt time.
 * Kalenderbaserte variabler (måned, helg, helligdag) identifiserer systematiske mønstre knyttet til reisevaner.
 * Flytypefordeling gjør det mulig å vekte forskjeller mellom småfly og større rutefly.
 * Visualisering gjennom Streamlit: Den interaktive appen gjør komplekse prediksjoner lett tilgjengelige for beslutningstakere, med intuitiv navigasjon og visualisering av sannsynligheter.
-### Hvordan modellen kan videreutvikles
+
+#### Hvordan modellen kan videreutvikles
 * Bedre værdata: Legge til detaljer som vindstyrke, nedbør og siktforhold for å forbedre modellens presisjon.
 * Sanntidsintegrasjon: Koble modellen direkte mot Avinors operative systemer og eventuelle API-er for kontinuerlig prediksjon og overvåking.
 * Utvidet modellutvalg: Utforske nevralnettverk eller ensemble-metoder som kombinerer flere modeller for ytterligere ytelsesforbedring.
@@ -162,6 +165,7 @@ Kartvisning:
 
 ## Videreutvikling og skalering
 * Legge til mer detaljerte værdata (vind, sikt, nedbør).
+* Optimalisere API-call til værdata
 * Teste andre modeller som ElasticNet eller Neural Networks.
 * Optimalisere XGBoost med større hyperparameter-søk.
 * Integrere systemet direkte mot sanntidsdata fra Avinor API (hvis tilgjengelig).
