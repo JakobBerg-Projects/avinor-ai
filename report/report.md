@@ -6,6 +6,8 @@ Denne rapporten beskriver vår tilnærming til å utvikle en prediksjonsmodell f
 
 Vi benytter historiske flydata til å trene modeller og evaluerer ytelsen ved hjelp av AUC og log loss, i tråd med konkurransens evalueringskriterier
 
+<br><br>
+
 ## 2. Datagrunnlag og utforskende analyse
 Datasettet historical_flights.csv inneholder detaljerte opplysninger om flyvninger, både planlagte og faktiske. Variablene kan deles inn i tre hovedkategorier: identifikasjon, operasjonelle opplysninger og tidsstempler:
 
@@ -52,6 +54,15 @@ Analysen viser at i 49 % av tilfellene der planlagte tider indikerer overlapp, o
 
 Det gjenstår imidlertid 20,7 % av tilfellene hvor planlagte tider ikke stemmer med faktisk utfall: enten var samtidighet planlagt uten å inntreffe, eller så oppstod samtidighet selv om det ikke var planlagt. Dette avviket er spesielt interessant, og videre analyse og modellering vil fokusere på å forstå hvilke faktorer som forklarer disse tilfellene.
 
+<br><br>
+<br><br>
+<br><br>
+<br><br>
+<br><br>
+<br><br>
+
+### Antall flyvninger
+
 Vi ønsker å se når i løpet av tidsintervaller på 1 time det vil skje en samtidighet. Grunnet at hver fly vil ha en kommunikasjonstid med AFIS-fullmektig på enten 23 eller 21 minutter vil det være naturlig å se på hvor mange fly vi har den gitte timen, og hvordan det påvirker target og target scheduled.
 ![FlightCountVsCollision%](visualizations/target-schedVsActual-flightcnt.png)
 
@@ -66,46 +77,63 @@ Ved lavere trafikk (1–3 fly per time) ser vi flere avvik:
 
 Totalt sett viser figuren at prediksjonskvaliteten er svært god ved høy trafikk, mens de mest utfordrende situasjonene å predikere oppstår når vi har 1–3 fly på en time.
 
+<br><br>
+
+På grafen under, ser vi en visualiser av antall flyvninger i løpet av en dag og hvordan dette påvirker samtidighet i forhold til hva som var planlagdt. Den viser hvordan falske negativer, falske positiver og de korrekte samtidigheten endrer seg med antallet flyvninger.
+
+![DagligeFlyvningerVsTarget%](visualizations/DailyFlightVSTarget.png)
+
+Ut i fra grafen, så kan vi lære et par ting. Vi ser at antall korrekte samtidigheter i følge planen går ned fra 100% til 85% når vi treffer 50 flyvninger på en dag. Etter 50 flyvninger så går den litt opp igjen til omtrent 90%. Vi ser også at jo flere flyvninger det blir, jo høyere blir adelen av feilene som er falske negativer (uplanlagdte samtidigheter). Fra 0-37 flyvninger per dag er det mer falske positiver, men etter dette blir det flere av falske negativer.
+  
+<br><br>
+
+### Forsinkelser
+
 En sentral årsak til disse avvikene er forsinkelser. Dersom fly ikke går eller lander på det planlagte tidspunktet, kan kommunikasjonen overlappe selv om dette ikke var forventet i den opprinnelige planen. For å undersøke dette ser vi nærmere på hvordan forsinkelsene fordeler seg. Vi filtrerer bort ekstreme tilfeller, der noen få fly har forsinkelser på flere dager, og får dermed et mer representativt bilde av den typiske variasjonen.
 
 ![FlightCountVsCollision%](visualizations/forsinkelse-histogram.png)
 
 Ettersom forsinkelsen har lange haler både for positiv og negativ forsinkelse vil en t-fordeling med parametere df=3.7 og mu=-1.98 og sigma=8.02 være et godt estimat på fordelingen forsinkelsen tas fra. Her ser vi at de aller fleste fly har nesten ingen forsinkelse. Likevel vil et skift fra dette midtpunktet gjøre at oppsatt tid ikke vil kunne alene beskrive om det vil forekomme samtidighet eller ikke.
 
+<br><br>
+
+### Forskjellige tider på året
+
 ![samtidighetMåneder](visualizations/4-samtidighet-måneder.png)
 Figuren viser andelen samtidighet per måned gjennom året. Vi ser en markant sesongvariasjon: andelen samtidighet er lavest i april–mai (ca. 30 %), men øker jevnt utover sommeren og når en topp på rundt 36 % i september–oktober. Deretter faller andelen igjen mot desember. Dette indikerer at høsten har en klart høyere andel samtidige flybevegelser, noe som kan skyldes både økt trafikkvolum og mer komplekse avvik i denne perioden.
+  
+<br><br>
 
-
-På grafen under, ser vi en visualiser av antall flyvninger i løpet av en dag og hvordan dette påvirker samtidighet i forhold til hva som var planlagdt. Den viser hvordan falske negativer, falske positiver og de korrekte samtidigheten endrer seg med antallet flyvninger.
-
-![DagligeFlyvningerVsTarget%](visualizations/DailyFlightVSTarget.png)
-
-Ut i fra grafen, så kan vi lære et par ting. Vi ser at antall korrekte samtidigheter i følge planen går ned frem til vi når 50 flyvninger på en dag. Etter 50 flyvninger så går den litt opp igjen. Vi ser også at jo flere flyvninger det blir, jo høyere blir adelen av feilene som er falske negativer (uplanlagdte samtidigheter).
-
-
+### Flyplassgrupper
+  
 I stolpesiagrammet under ser vi på forskjellene i de forskjellige flyplassgruppene. Vi ser etter her er om det er noe forskjeller i mengden eller typen feil om blir gjort. Ut i fra dette kan vi finne ut om flyplassgruppene kan påvirke samtidigheten. 
-
 
 ![FlyplassVsTarget%](visualizations/AirportGroupVSTarget.png)
 
-Det ser ikke ut til å være en veldig stor forskjell i antallet feil som blir gjort per flyplassgruppe. Det er noen forskjell mellom noen, men den er ikke betydelig. Det som det var forskjell i var typen feil som ble gjort mellom gruppene. Gruppe A gjorde veldig mange falske negativer, men gruppe C og F gjorde mange falske positiver. Dette viser oss at det er forskjell i gruppene, men kun i typen feil.
+Det ser ikke ut til å være en veldig stor forskjell i antallet feil som blir gjort per flyplassgruppe. Det er noen forskjell mellom noen av gruppene, men den er ikke en betydelig forskjell. Det som det var forskjell i var typen feil som ble gjort mellom gruppene. Gruppe A gjorde veldig mange falske negativer (8,4%), men gruppe C og F gjorde mange falske positiver (ca 6,7% op begge). Dette viser oss at det er forskjell i gruppene, men kun i typen feil.
+  
+<br><br>
 
+### Flyselskaper
+  
+Nå ser vi på forskjellene i de 5 mest brukte flyselskapene i datasettet. Vi har kun valgt å ha med de flyselskapene som var modolusen til forskjellige 500 timer i datasettet. Det vi ser etter her er om det er noe forskjeller i mengden eller typen feil om blir gjort. Ut i fra dette kan vi finne ut om flyselskapet kan påvirke resultatene våre. 
 
-Nå ser vi på forskjellene i de 5 mest brukte flyselskapene i datasettet. Vi har kun valgt å ha med de flyselskapene som var modolusen til forskjellige 500 timer i eksempelet. Det vi ser etter her er om det er noe forskjeller i mengden eller typen feil om blir gjort. Ut i fra dette kan vi finne ut om flyselskapet kan påvirke resultatene våre. 
-
-Måten vi har funnet ut av flyselskapene er ved å se på de første bokstavene i "flight_id". Dette ser ut til å vise til en IATA kode for flyplasser i de fleste tilfeller. Det er noen eksempler hvor vi får ut koder på andre formater. LPA er et eksempel på en kode som vi fikk ut på denne måten som ikke er en IATA kode. Det kan hende at dette er en annen form for referanse til flyselskap eller at det betyr "Gran Canaria Airport".
+Måten vi har funnet ut av flyselskapene er ved å se på de første bokstavene i "flight_id". Dette ser ut til å vise til en IATA kode for flyselskaper i de fleste tilfeller. Det er noen eksempler hvor vi får ut koder på andre formater. LPA er et eksempel på en kode som vi fikk ut på denne måten som ikke er en IATA kode. Det kan hende at dette er en annen form for referanse til flyselskap eller at det betyr "Gran Canaria Airport".
 
 ![FlyselvskapVsTarget%](visualizations/AirlineVSTarget.png)
 
 Ut ifra dette stolpediagramet, så ser vi at det er ganske store variasjoner i de forskjellige flyselskapene. Den tydeligste forskjellgen er i "flyselskapet" LPA som har en mye støre andel av falske negativer. Dette vil si at det ofte er planlagt at ikke det blir samtidighet, men at det skjer uansett. En annen tydelig forskjell er i selskapet DY (Norwegian Air Shuttle) som har det helt omvendt. Der er det større sansynlighet for at det er planlagdt samtidighet, men at det ikke ender opp med å skje. Selskapet som har samtidigheter som passer best med de planlagdte flyvningnene er SK (Scandinavian Airlines). Dette viser oss at hvilket flyselskap som er i bruk ser ut til å påvirke om det blir samtidighet eller ikke.
-
- 
-
+  
+  
 ### 2.3 Foreløpige observasjoner
 
 Samtidighet oppstår hyppigst når trafikkmengden er høy.
 
+Samtidighet oppstår mer i noen flyselskaper enn hos andre. 
+
 Planlagt samtidighet gir en indikasjon, men fanger ikke opp alle reelle overlapp.
+
+<br><br>
 
 ## 3. Metodevalg og tilnærming
 ### 3.1 Intervall- og target-konstruksjon
@@ -128,7 +156,7 @@ Operasjonelle features
 * daily_flights_cnt: Summerer trafikkmengden for hele dagen. Høy daglig trafikk kan øke belastningen og risikoen for forsinkelser, noe som igjen påvirker samtidighet.
 * avg_duration og max_duration: Gjennomsnittlig og maksimal planlagt flytid, beregnet fra sta – std.
 * passenger_share, cargo_share, charter_share: Andel av flyvningene i timen som er passasjer-, frakt- eller charterfly.
-* airline: dominerende flyselskap i timen (modus).
+* airline: dominerende flyselskap i timen (modus). Hentet fra de første bokstavene i "flight_id"
 
 Tidsfeatures
 * dow: ukedag (0-6). Trafikkmengden varierer systematisk gjennom uken.
@@ -174,6 +202,8 @@ XGBoostClassification
 
 Dermed har vi valgt XGBoostClassification som endelig modell, og evaluerer denne på test-dataen.
 
+<br><br>
+
 ## 4. Resultater
 ### 4.1 Baseline
 
@@ -197,7 +227,7 @@ Dette viser at modellen tilfører klar merverdi utover baseline, særlig ved å 
 
 AUC: (resultat)
 
-![featureimportance](visualizations/cm.png)
+![auc](visualizations/auc.png)
 
 Figuren viser ROC-kurven (Receiver Operating Characteristic) for Random Forest-modellen på testsettet. Kurven illustrerer forholdet mellom True Positive Rate (sensitivitet) og False Positive Rate (1–spesifisitet) for ulike terskelverdier.
 AUC (Area Under the Curve) er beregnet til 0,964, noe som indikerer svært høy diskrimineringsevne. Det betyr at modellen i 96,4 % av tilfellene vil rangere et tilfeldig valgt positivt tilfelle høyere enn et negativt tilfelle.
@@ -224,6 +254,7 @@ Totalt sett viser feature importance-analysen at samtidighet først og fremst dr
 
 ![featureimportance](visualizations/feature_importance.png)
 
+
 ## 5. Systemstruktur og arkitektur
 
 Løsningen er bygget som et modulært Python-system:
@@ -236,6 +267,8 @@ Løsningen er bygget som et modulært Python-system:
 
 Dette muliggjør enkel reproduserbarhet og videreutvikling.
 
+<br><br>
+
 ## 6. Videre arbeid
 
 Vi har allerede inkludert eksterne kilder som værdata, helligdager og sesonginformasjon, men ser flere muligheter for videre forbedring:
@@ -243,6 +276,8 @@ Vi har allerede inkludert eksterne kilder som værdata, helligdager og sesonginf
 * Mer detaljerte værdata: Vi har benyttet standard klimadata (temperatur, nedbør, vind), men det kunne vært nyttig å hente mer flytekniske værvariabler dersom dette var lettere tilgjengelig, for eksempel siktforhold, skydekke, turbulensvarsler eller vindretning på rullebane. Slike forhold kan ha direkte innvirkning på forsinkelser og samtidighet.
 * Forbedret hyperparameter-tuning: Vi har gjennomført både RandomizedSearchCV og HalvingGridSearchCV, men kunne utvidet med mer avanserte søkestrategier (f.eks. Bayesian Optimization) for ytterligere å optimalisere modellene.
 * Feature-utvidelser: Utforske hvordan forsinkelser forplanter seg i kjeder (cascade-effekter), der en forsinkelse på ett fly kan påvirke neste rotasjon eller andre fly i samme flyplassgruppe
+
+<br><br>
 
 ## 7. Konklusjon
 
