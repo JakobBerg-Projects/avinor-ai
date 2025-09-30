@@ -16,7 +16,7 @@ Vi valgte en maskinlæringstilnærming fordi samtidighet påvirkes av flere fakt
 * Modellvalg: Random Forest og XGBoost, fordi de er robuste mot ikke-linearitet og kan håndtere kategoriske/numeriske variabler samtidig.
 * Hyperparameter-tuning: Vi brukte RandomizedSearchCV for å gjøre et bredt søk over parametre. HalvingGridSearchCV ble testet, men ga liten gevinst og ble derfor droppet.
 * Evaluering: ROC AUC og Log Loss ble brukt som primære metrikker.
- Beste modell ble XGBoost, som ble valgt for endelig innsending.
+ Beste modell ble RandomForest, som ble valgt for endelig innsending.
 
 <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 ## b. Systemstruktur og arkitektur
@@ -65,13 +65,13 @@ flowchart TD
 ```
 <br><br><br><br>
 ## c. Modeller og algoritmer
-* Random Forest Classifier
+* Random Forest Classifier (endelig modell)
     * Parametere: n_estimators, max_depth, min_samples_split, min_samples_leaf.
-* XGBoost Classifier (endelig modell)
+* XGBoost Classifier 
     * Parametere: learning_rate, max_depth, subsample, colsample_bytree, reg_alpha, reg_lambda.
 * Hyperparameter-tuning: RandomizedSearchCV (n_iter satt for å balansere tid og kvalitet).
 * Evalueringsmetrikker: ROC AUC for klassifiseringskvalitet, Log Loss for kalibrering av sannsynligheter.
-Resultatene viste at XGBoost presterte best, med høyere AUC og lavere Log Loss enn Random Forest.
+Resultatene viste at Random Forest presterte best, med høyere AUC og lavere Log Loss enn Random Forest.
 
 ## d. Kildekode
 Koden er organisert i src/ for kjørbare scripts og notebooksExperimental/ for utforskende arbeid.
@@ -127,10 +127,10 @@ FROST_SECRET=<...>
 
 ## e. Innovasjon og kreativitet
 #### Oppsummering av modellens egenskaper og styrker
-* Høy treffsikkerhet: XGBoost-modellen fanger opp komplekse mønstre i dataene og gir best ytelse av de testede modellene, med høy ROC AUC og lav Log Loss.
+* Høy treffsikkerhet: RandomForest-modellen fanger opp komplekse mønstre i dataene og gir best ytelse av de testede modellene, med høy ROC AUC og lav Log Loss.
 * Robusthet: Modellen er trent på en rik feature-sett som inkluderer trafikkmønstre, forsinkelser, værdata og kalenderinformasjon (helg/helligdag). Dette gjør den godt egnet til å generalisere på tvers av ulike flyplasser og tidspunkter.
 * Kalibrerte sannsynligheter: Log Loss-optimalisering sikrer at modellens sannsynlighetsestimat kan brukes direkte i beslutningsstøtte, ikke bare som klassifikasjoner.
-* Forklarbarhet: Feature importance fra XGBoost og Random Forest gir innsikt i hvilke faktorer som påvirker samtidighet mest – for eksempel antall flyvninger, tid på døgnet og forsinkelser.
+* Forklarbarhet: Feature importance fra Random Forest gir innsikt i hvilke faktorer som påvirker samtidighet mest – for eksempel antall flyvninger, tid på døgnet og forsinkelser.
 #### Kreativ bruk av kunstig intelligens og data
 * Ekstern datakilde: Vi har integrert værdata fra Meteorologisk institutt (Frost API), noe som gir et ekstra dimensjonalt lag av informasjon utover Avinors egne data. Værforhold kan påvirke trafikkavvikling og samtidighet, og denne integrasjonen gir Avinor et rikere beslutningsgrunnlag.
 ##### Kreativ feature engineering:
@@ -175,6 +175,6 @@ Kartvisning:
 Prosjekt utviklet av:
 Jakob Brekke Berg,
 Jonas Mathisen Sterud,
-Tobias Munch,
+Tobias Andreas Munch,
 Universitetet i Bergen, 2025.
 

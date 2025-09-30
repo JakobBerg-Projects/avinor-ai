@@ -196,16 +196,16 @@ De beste modellene fra RandomizedSearchCV ble deretter evaluert på valideringsd
 
 
 RandomForestClassification
-* Accuracy:
-* AUC: 
-* Log-loss: 
+* Accuracy:0.88
+* AUC: 0.95
+* Log-loss: 0.27
 
 XGBoostClassification
-* Accuracy:
-* AUC: 
-* Log-Loss
+* Accuracy:0.88
+* AUC: 0.95
+* Log-Loss: 0.29
 
-Dermed har vi valgt XGBoostClassification som endelig modell, og evaluerer denne på test-dataen.
+Dermed har vi valgt RandomForest som endelig modell, og evaluerer denne på test-dataen.
 
 <br><br>
 
@@ -222,7 +222,7 @@ Majoritetsmodell: lav prediksjonsevne, men jevn log loss.
 
 ### 4.2 Random Forest
 
-Accuracy: (resultat)
+Accuracy: 0.91
 
 ![featureimportance](visualizations/cm.png)
 
@@ -230,15 +230,14 @@ Figuren over viser confusion matrix for Random Forest-modellen på testsettet, u
 Sammenligner vi dette med baseline-figuren (Scheduled vs Actual), ser vi en klar forbedring. Baseline basert på planlagte tider treffer riktig i 79,3 % av tilfellene (49,0 % + 30,3 %), men har en høyere andel feilprediksjoner (20,7 % totalt). Random Forest-modellen reduserer altså feilraten betydelig ved å fange opp avvik som skyldes forsinkelser og andre operasjonelle forhold som ikke reflekteres i planlagte tider.
 Dette viser at modellen tilfører klar merverdi utover baseline, særlig ved å redusere antallet falske negative – altså tilfeller hvor planlagte tider indikerer ingen samtidighet, men hvor det i realiteten oppstår overlapp.
 
-AUC: (resultat)
-
+AUC: 0.96
 ![auc](visualizations/auc.png)
 
 Figuren viser ROC-kurven (Receiver Operating Characteristic) for Random Forest-modellen på testsettet. Kurven illustrerer forholdet mellom True Positive Rate (sensitivitet) og False Positive Rate (1–spesifisitet) for ulike terskelverdier.
 AUC (Area Under the Curve) er beregnet til 0,964, noe som indikerer svært høy diskrimineringsevne. Det betyr at modellen i 96,4 % av tilfellene vil rangere et tilfeldig valgt positivt tilfelle høyere enn et negativt tilfelle.
 Den tydelige buen langt over diagonal-linjen (tilfeldig gjetning) viser at modellen er betydelig bedre enn en naiv klassifikator, og at den har god balanse mellom å oppdage samtidighet (høy sensitivitet) og å unngå falske alarmer (lav falsk positiv rate).
 
-Log Loss: (resultat)
+Log Loss: 0.22
 
 ### 4.3 Feature importance
 
