@@ -76,17 +76,30 @@ Ettersom forsinkelsen har lange haler både for positiv og negativ forsinkelse v
 Figuren viser andelen samtidighet per måned gjennom året. Vi ser en markant sesongvariasjon: andelen samtidighet er lavest i april–mai (ca. 30 %), men øker jevnt utover sommeren og når en topp på rundt 36 % i september–oktober. Deretter faller andelen igjen mot desember. Dette indikerer at høsten har en klart høyere andel samtidige flybevegelser, noe som kan skyldes både økt trafikkvolum og mer komplekse avvik i denne perioden.
 
 
-#### Daglige flyvninger mot target:
+På grafen under, ser vi en visualiser av antall flyvninger i løpet av en dag og hvordan dette påvirker samtidighet i forhold til hva som var planlagdt. Den viser hvordan falske negativer, falske positiver og de korrekte samtidigheten endrer seg med antallet flyvninger.
 
 ![DagligeFlyvningerVsTarget%](visualizations/DailyFlightVSTarget.png)
 
-#### Visualing av de forskjellige flyplassene
+Ut i fra grafen, så kan vi lære et par ting. Vi ser at antall korrekte samtidigheter i følge planen går ned frem til vi når 50 flyvninger på en dag. Etter 50 flyvninger så går den litt opp igjen. Vi ser også at jo flere flyvninger det blir, jo høyere blir adelen av feilene som er falske negativer (uplanlagdte samtidigheter).
+
+
+I stolpesiagrammet under ser vi på forskjellene i de forskjellige flyplassgruppene. Vi ser etter her er om det er noe forskjeller i mengden eller typen feil om blir gjort. Ut i fra dette kan vi finne ut om flyplassgruppene kan påvirke samtidigheten. 
+
 
 ![FlyplassVsTarget%](visualizations/AirportGroupVSTarget.png)
 
-#### Visualing av de forskjellige flyselvkapene
+Det ser ikke ut til å være en veldig stor forskjell i antallet feil som blir gjort per flyplassgruppe. Det er noen forskjell mellom noen, men den er ikke betydelig. Det som det var forskjell i var typen feil som ble gjort mellom gruppene. Gruppe A gjorde veldig mange falske negativer, men gruppe C og F gjorde mange falske positiver. Dette viser oss at det er forskjell i gruppene, men kun i typen feil.
+
+
+Nå ser vi på forskjellene i de 5 mest brukte flyselskapene i datasettet. Vi har kun valgt å ha med de flyselskapene som var modolusen til forskjellige 500 timer i eksempelet. Det vi ser etter her er om det er noe forskjeller i mengden eller typen feil om blir gjort. Ut i fra dette kan vi finne ut om flyselskapet kan påvirke resultatene våre. 
+
+Måten vi har funnet ut av flyselskapene er ved å se på de første bokstavene i "flight_id". Dette ser ut til å vise til en IATA kode for flyplasser i de fleste tilfeller. Det er noen eksempler hvor vi får ut koder på andre formater. LPA er et eksempel på en kode som vi fikk ut på denne måten som ikke er en IATA kode. Det kan hende at dette er en annen form for referanse til flyselskap eller at det betyr "Gran Canaria Airport".
 
 ![FlyselvskapVsTarget%](visualizations/AirlineVSTarget.png)
+
+Ut ifra dette stolpediagramet, så ser vi at det er ganske store variasjoner i de forskjellige flyselskapene. Den tydeligste forskjellgen er i "flyselskapet" LPA som har en mye støre andel av falske negativer. Dette vil si at det ofte er planlagt at ikke det blir samtidighet, men at det skjer uansett. En annen tydelig forskjell er i selskapet DY (Norwegian Air Shuttle) som har det helt omvendt. Der er det større sansynlighet for at det er planlagdt samtidighet, men at det ikke ender opp med å skje. Selskapet som har samtidigheter som passer best med de planlagdte flyvningnene er SK (Scandinavian Airlines). Dette viser oss at hvilket flyselskap som er i bruk ser ut til å påvirke om det blir samtidighet eller ikke.
+
+ 
 
 ### 2.3 Foreløpige observasjoner
 
